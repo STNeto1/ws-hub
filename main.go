@@ -12,6 +12,8 @@ import (
 )
 
 func main() {
+	db := pkg.CreateDB()
+
 	app := fiber.New(fiber.Config{
 		Views: createTemplate(),
 	})
@@ -22,6 +24,7 @@ func main() {
 	app.Get("/ws", websocket.New(pkg.HandleMessage, websocket.Config{}))
 
 	go pkg.RunHub()
+	go pkg.RunWorker(db)
 
 	app.Listen(":3000")
 }

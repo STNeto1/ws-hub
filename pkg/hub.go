@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/gofiber/contrib/websocket"
+	"github.com/jmoiron/sqlx"
 )
 
 type errorMessagePayload struct {
@@ -87,6 +88,21 @@ func RunHub() {
 		case connection := <-unregister:
 			// Remove the client from the hub
 			delete(clients, connection)
+		}
+	}
+}
+
+func RunWorker(conn *sqlx.DB) {
+	query := `INSERT INTO logs (topic, message) VALUES (?, ?)`
+
+	for {
+		select {
+		case payload := <-broadcast:
+
+			if _, err := conn.Exec(query, payload.topic, payload.message); err != nil {
+				log.Println("failed to insert into logs", err)
+			}
+
 		}
 	}
 }
