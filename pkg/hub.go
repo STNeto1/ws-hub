@@ -28,7 +28,7 @@ type registerClientTopic struct {
 
 type broadcastMessage struct {
 	topic   string
-	message string
+	message []byte
 }
 
 var clients = make(map[*websocket.Conn]*client)
@@ -66,7 +66,7 @@ func RunHub() {
 						return
 					}
 
-					if err := connection.WriteMessage(websocket.TextMessage, []byte(payload.message)); err != nil {
+					if err := connection.WriteMessage(websocket.TextMessage, payload.message); err != nil {
 						c.isClosing = true
 						log.Println("write error:", err)
 
@@ -137,12 +137,8 @@ func HandleMessage(c *websocket.Conn) {
 				continue
 			}
 
-			broadcast <- broadcastMessage{topic: topic.Topic, message: string(message)}
+			broadcast <- broadcastMessage{topic: topic.Topic, message: message}
 		}
-
-		// if messageType == websocket.BinaryMessage {
-		// 	broadcast <- {topic: topic.Topic, message: string(message)}
-		// }
 	}
 }
 
