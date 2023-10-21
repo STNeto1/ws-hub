@@ -1,7 +1,20 @@
 package main
 
-import "fmt"
+import (
+	"github.com/gofiber/contrib/websocket"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/stneto1/ws-hub/pkg"
+)
 
 func main() {
-	fmt.Println("Hello World")
+	app := fiber.New(fiber.Config{})
+
+	app.Use(logger.New())
+
+	app.Get("/ws", websocket.New(pkg.HandleMessage, websocket.Config{}))
+
+	go pkg.RunHub()
+
+	app.Listen(":3000")
 }
