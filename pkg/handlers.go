@@ -31,7 +31,7 @@ func HandleConnectionsWs(c *websocket.Conn) {
 	registerAdmin <- c
 
 	var buf bytes.Buffer
-	if err := sendConnections(tmpl, &buf, len(clients)); err != nil {
+	if err := sendConnections(tmpl, &buf, c, len(clients)); err != nil {
 		return
 	}
 
@@ -45,7 +45,7 @@ func HandleConnectionsWs(c *websocket.Conn) {
 		lastClientCount = len(clients)
 
 		buf.Reset()
-		if err := sendConnections(tmpl, &buf, len(clients)); err != nil {
+		if err := sendConnections(tmpl, &buf, c, len(clients)); err != nil {
 			return
 		}
 
@@ -54,7 +54,7 @@ func HandleConnectionsWs(c *websocket.Conn) {
 
 }
 
-func sendConnections(tmpl *Template, buf *bytes.Buffer, count int) error {
+func sendConnections(tmpl *Template, buf *bytes.Buffer, conn *websocket.Conn, count int) error {
 	if err := tmpl.Render(buf, "connections", fiber.Map{
 		"connections": count,
 	}); err != nil {
@@ -62,6 +62,6 @@ func sendConnections(tmpl *Template, buf *bytes.Buffer, count int) error {
 		return err
 	}
 
-	broadcastAdmin <- buf.Bytes()
-	return nil
+	return conn.WriteMessage(websocket.TextMessage, buf.Bytes())
+
 }
