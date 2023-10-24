@@ -71,7 +71,7 @@ func HandleMessage(c *websocket.Conn) {
 					continue
 				}
 
-				registerClient <- registerClientTopic{conn: c, topic: topic.Topic}
+				setupClientTopic <- registerClientTopic{conn: c, topic: topic.Topic}
 				sendInfoMessage(c, "connected")
 				continue
 			}

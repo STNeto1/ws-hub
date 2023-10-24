@@ -1,3 +1,8 @@
 {{block "card1" . }}
 <h1>Card 1</h1>
+{{end}} {{block "connections" . }}
+<!-- id="connections" matches the element to be swapped by the ws message -->
+<div id="connections" hx-swap-oob="true">
+  <h2>{{.connections}} connections</h2>
+</div>
 {{end}}
