@@ -2,10 +2,14 @@
 
 Generic apps to host and manage ws connections
 
-- Show connected clients
+- Show connected clients (ok)
 - Show Number of total “rooms”
 - Show Number of total Messages
 - Show last N Messages
 - Store Messages in database
 - Secret on headers to Connect (Optional)
 - Deploy to fly
+
+
+-- Check later
+- Pooling to send number of connections
