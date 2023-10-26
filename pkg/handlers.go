@@ -37,14 +37,13 @@ func HandleConnectionsWs(c *websocket.Conn) {
 
 	registerAdmin <- c
 
-	lastClientCount := len(clients)
-
 	var wg sync.WaitGroup
 	wg.Add(2)
 
 	go func() {
 		defer wg.Done()
 
+		lastClientCount := len(clients)
 		var buf bytes.Buffer
 		if err := sendConnections(tmpl, &buf, c, len(clients)); err != nil {
 			return
