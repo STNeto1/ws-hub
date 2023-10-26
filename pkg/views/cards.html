@@ -5,4 +5,14 @@
 <div id="connections" hx-swap-oob="true">
   <h2>{{.connections}} connections</h2>
 </div>
+{{end}} {{block "topics" . }}
+<div id="topics" hx-swap-oob="true">
+  <h2>Latest topics</h2>
+
+  <ul>
+    {{range .topics}}
+    <li>{{.}}</li>
+    {{end}}
+  </ul>
+</div>
 {{end}}

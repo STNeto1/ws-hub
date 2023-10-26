@@ -9,8 +9,6 @@ import (
 )
 
 func main() {
-	db := pkg.CreateDB()
-
 	tmpl := pkg.CreateTemplate()
 	app := fiber.New(fiber.Config{
 		Views: tmpl,
@@ -24,6 +22,7 @@ func main() {
 	}))
 	app.Use(func(c *fiber.Ctx) error {
 		c.Locals("tmpl", tmpl)
+		c.Locals("db", pkg.CreateDB())
 
 		return c.Next()
 	})
@@ -34,7 +33,7 @@ func main() {
 
 	go pkg.RunHub()
 	go pkg.RunAdminHub()
-	go pkg.RunWorker(db)
+	go pkg.RunWorker(pkg.CreateDB())
 
 	app.Listen(":3000")
 }
