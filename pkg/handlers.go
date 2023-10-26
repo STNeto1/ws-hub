@@ -88,15 +88,16 @@ func HandleConnectionsWs(c *websocket.Conn) {
 					continue
 				}
 
-				if lastTopics == nil || !equalSlice(lastTopics, topics) {
+				if !equalSlice(&lastTopics, &topics) {
 					buf.Reset()
 					if err := sendTopics(tmpl, &buf, c, &topics); err != nil {
 						log.Println("failed to send topics to client", err)
-						return
+						continue
 					}
+
+					lastTopics = topics
 				}
 
-				lastTopics = topics
 			}
 		}
 	}()
@@ -136,13 +137,17 @@ func getLatestTopics(db *sqlx.DB) ([]string, error) {
 	return topics, nil
 }
 
-func equalSlice(a, b []string) bool {
-	if len(a) != len(b) {
+func equalSlice(a, b *[]string) bool {
+	if a == nil || b == nil {
 		return false
 	}
 
-	for i, val := range a {
-		if b[i] != val {
+	if len(*a) != len(*b) {
+		return false
+	}
+
+	for i, v := range *a {
+		if v != (*b)[i] {
 			return false
 		}
 	}
