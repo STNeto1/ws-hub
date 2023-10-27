@@ -10,8 +10,18 @@ Generic apps to host and manage ws connections
 - Secret on headers to Connect (Optional)
 - Deploy to fly
 
--- How to run build?
-- `go run -o app ./main.go`
+---
 
--- How to run styles?
-- `bunx tailwindcss -i pkg/views/input.css -o public/output.css --watch`
+### Details
+
+- Data is stored into a .sqlite3 local file
+   - You can delete the file and it will be recreated when the app runs
+- It's possible to add authentication for both user accessing it and the ws endpoint
+
+---
+
+- How to run build?
+  - `go run -o app ./main.go`
+
+- How to run styles?
+  - `bunx tailwindcss -i pkg/views/input.css -o public/output.css --watch`
