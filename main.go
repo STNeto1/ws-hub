@@ -10,6 +10,9 @@ import (
 
 func main() {
 	tmpl := pkg.CreateTemplate()
+
+	container := pkg.NewContainer(tmpl, pkg.CreateDB())
+
 	app := fiber.New(fiber.Config{
 		Views: tmpl,
 	})
@@ -21,16 +24,10 @@ func main() {
 		AllowHeaders:     "Cache-Control",
 		AllowCredentials: true,
 	}))
-	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("tmpl", tmpl)
-		c.Locals("db", pkg.CreateDB())
 
-		return c.Next()
-	})
-
-	app.Get("/", pkg.HandleIndex)
-	app.Get("/ws", websocket.New(pkg.HandleMessage, websocket.Config{}))
-	app.Get("/admin-ws", websocket.New(pkg.HandleConnectionsWs, websocket.Config{}))
+	app.Get("/", container.HandleIndex)
+	app.Get("/ws", websocket.New(container.HandleMessage, websocket.Config{}))
+	app.Get("/admin-ws", websocket.New(container.HandleConnectionsWs, websocket.Config{}))
 
 	go pkg.RunHub()
 	go pkg.RunAdminHub()

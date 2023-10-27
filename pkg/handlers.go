@@ -12,25 +12,25 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func HandleIndex(c *fiber.Ctx) error {
+type Container struct {
+	Template *Template
+	Db       *sqlx.DB
+}
+
+func NewContainer(tmpl *Template, db *sqlx.DB) *Container {
+	return &Container{
+		Template: tmpl,
+		Db:       db,
+	}
+}
+
+func (*Container) HandleIndex(c *fiber.Ctx) error {
 	return c.Render("index.html", fiber.Map{
 		"connections": len(clients),
 	})
 }
 
-func HandleConnectionsWs(c *websocket.Conn) {
-	tmpl, ok := c.Locals("tmpl").(*Template)
-	if !ok {
-		log.Println("failed to get template")
-		return
-	}
-
-	conn, ok := c.Locals("db").(*sqlx.DB)
-	if !ok {
-		log.Println("failed to get db")
-		return
-	}
-
+func (cnt *Container) HandleConnectionsWs(c *websocket.Conn) {
 	defer func() {
 		unregisterAdmin <- c
 		c.Close()
@@ -46,7 +46,7 @@ func HandleConnectionsWs(c *websocket.Conn) {
 
 		lastClientCount := len(clients)
 		var buf bytes.Buffer
-		if err := sendConnections(tmpl, &buf, c, len(clients)); err != nil {
+		if err := sendConnections(cnt.Template, &buf, c, len(clients)); err != nil {
 			return
 		}
 
@@ -59,7 +59,7 @@ func HandleConnectionsWs(c *websocket.Conn) {
 				lastClientCount = len(clients)
 
 				buf.Reset()
-				if err := sendConnections(tmpl, &buf, c, len(clients)); err != nil {
+				if err := sendConnections(cnt.Template, &buf, c, len(clients)); err != nil {
 					return
 				}
 			}
@@ -69,21 +69,21 @@ func HandleConnectionsWs(c *websocket.Conn) {
 	go func() {
 		defer wg.Done()
 
-		lastTopics, err := getLatestTopics(conn)
+		lastTopics, err := getLatestTopics(cnt.Db)
 		if err != nil {
 			log.Println("failed to get topics", err)
 			return
 		}
 
 		var buf bytes.Buffer
-		if err := sendTopics(tmpl, &buf, c, &lastTopics); err != nil {
+		if err := sendTopics(cnt.Template, &buf, c, &lastTopics); err != nil {
 			return
 		}
 
 		for {
 			select {
 			case <-time.After(time.Second * 5):
-				topics, err := getLatestTopics(conn)
+				topics, err := getLatestTopics(cnt.Db)
 				if err != nil {
 					log.Println("failed to get topics", err)
 					continue
@@ -91,7 +91,7 @@ func HandleConnectionsWs(c *websocket.Conn) {
 
 				if !slices.Equal(lastTopics, topics) {
 					buf.Reset()
-					if err := sendTopics(tmpl, &buf, c, &topics); err != nil {
+					if err := sendTopics(cnt.Template, &buf, c, &topics); err != nil {
 						log.Println("failed to send topics to client", err)
 						continue
 					}
@@ -106,21 +106,21 @@ func HandleConnectionsWs(c *websocket.Conn) {
 	go func() {
 		defer wg.Done()
 
-		lastMessages, err := getLatestMessages(conn)
+		lastMessages, err := getLatestMessages(cnt.Db)
 		if err != nil {
 			log.Println("failed to get topics", err)
 			return
 		}
 
 		var buf bytes.Buffer
-		if err := sendMessages(tmpl, &buf, c, &lastMessages); err != nil {
+		if err := sendMessages(cnt.Template, &buf, c, &lastMessages); err != nil {
 			return
 		}
 
 		for {
 			select {
 			case <-time.After(time.Second * 5):
-				messages, err := getLatestMessages(conn)
+				messages, err := getLatestMessages(cnt.Db)
 				if err != nil {
 					log.Println("failed to get topics", err)
 					continue
@@ -128,7 +128,7 @@ func HandleConnectionsWs(c *websocket.Conn) {
 
 				if !slices.EqualFunc(lastMessages, messages, LogPredicate) {
 					buf.Reset()
-					if err := sendMessages(tmpl, &buf, c, &messages); err != nil {
+					if err := sendMessages(cnt.Template, &buf, c, &messages); err != nil {
 						log.Println("failed to send topics to client", err)
 						continue
 					}

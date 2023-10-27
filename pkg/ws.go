@@ -35,7 +35,7 @@ type topicMessage struct {
 	Topic string `json:"topic"`
 }
 
-func HandleMessage(c *websocket.Conn) {
+func (*Container) HandleMessage(c *websocket.Conn) {
 	var topic topicMessage
 	var msg json.RawMessage
 
