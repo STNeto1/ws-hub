@@ -4,6 +4,8 @@ import (
 	"html/template"
 	"io"
 	"log"
+
+	"github.com/Masterminds/sprig/v3"
 )
 
 type Template struct {
@@ -20,7 +22,7 @@ func (t *Template) Load() error {
 }
 
 func CreateTemplate() *Template {
-	blobs, err := template.New("").Funcs(template.FuncMap{}).ParseGlob("pkg/views/*.html")
+	blobs, err := template.New("").Funcs(sprig.FuncMap()).ParseGlob("pkg/views/*.html")
 
 	if err != nil {
 		log.Panicln("failed to parse templates", err)

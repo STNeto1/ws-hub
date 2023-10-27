@@ -15,4 +15,19 @@
     {{end}}
   </ul>
 </div>
+{{end}} {{block "messages" . }}
+<div id="messages" hx-swap-oob="true">
+  <h2>Latest topics</h2>
+
+  <div style="display: flex; flex-direction: column; gap: 2rem">
+    {{range .messages}}
+    <div style="display: flex; flex-direction: column">
+      <span>Topic: {{.Topic}}</span>
+      <span>Timestamp: {{.CreatedAt}}</span>
+      <span>{{.Message | toJson}}</span>
+    </div>
+
+    {{end}}
+  </div>
+</div>
 {{end}}

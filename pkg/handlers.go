@@ -3,6 +3,7 @@ package pkg
 import (
 	"bytes"
 	"log"
+	"slices"
 	"sync"
 	"time"
 
@@ -38,7 +39,7 @@ func HandleConnectionsWs(c *websocket.Conn) {
 	registerAdmin <- c
 
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(3)
 
 	go func() {
 		defer wg.Done()
@@ -88,7 +89,7 @@ func HandleConnectionsWs(c *websocket.Conn) {
 					continue
 				}
 
-				if !equalSlice(&lastTopics, &topics) {
+				if !slices.Equal(lastTopics, topics) {
 					buf.Reset()
 					if err := sendTopics(tmpl, &buf, c, &topics); err != nil {
 						log.Println("failed to send topics to client", err)
@@ -96,6 +97,43 @@ func HandleConnectionsWs(c *websocket.Conn) {
 					}
 
 					lastTopics = topics
+				}
+
+			}
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		lastMessages, err := getLatestMessages(conn)
+		if err != nil {
+			log.Println("failed to get topics", err)
+			return
+		}
+
+		var buf bytes.Buffer
+		if err := sendMessages(tmpl, &buf, c, &lastMessages); err != nil {
+			return
+		}
+
+		for {
+			select {
+			case <-time.After(time.Second * 5):
+				messages, err := getLatestMessages(conn)
+				if err != nil {
+					log.Println("failed to get topics", err)
+					continue
+				}
+
+				if !slices.EqualFunc(lastMessages, messages, LogPredicate) {
+					buf.Reset()
+					if err := sendMessages(tmpl, &buf, c, &messages); err != nil {
+						log.Println("failed to send topics to client", err)
+						continue
+					}
+
+					lastMessages = messages
 				}
 
 			}
@@ -128,6 +166,17 @@ func sendTopics(tmpl *Template, buf *bytes.Buffer, conn *websocket.Conn, topics 
 	return conn.WriteMessage(websocket.TextMessage, buf.Bytes())
 }
 
+func sendMessages(tmpl *Template, buf *bytes.Buffer, conn *websocket.Conn, payload *[]Log) error {
+	if err := tmpl.Render(buf, "messages", fiber.Map{
+		"messages": payload,
+	}); err != nil {
+		log.Println("failed to render template", err)
+		return err
+	}
+
+	return conn.WriteMessage(websocket.TextMessage, buf.Bytes())
+}
+
 func getLatestTopics(db *sqlx.DB) ([]string, error) {
 	var topics []string
 	if err := db.Select(&topics, "SELECT DISTINCT topic FROM logs ORDER BY created_at DESC LIMIT 10"); err != nil {
@@ -137,20 +186,11 @@ func getLatestTopics(db *sqlx.DB) ([]string, error) {
 	return topics, nil
 }
 
-func equalSlice(a, b *[]string) bool {
-	if a == nil || b == nil {
-		return false
+func getLatestMessages(db *sqlx.DB) ([]Log, error) {
+	var messages []Log
+	if err := db.Select(&messages, "SELECT * FROM logs ORDER BY created_at DESC LIMIT 10"); err != nil {
+		return nil, err
 	}
 
-	if len(*a) != len(*b) {
-		return false
-	}
-
-	for i, v := range *a {
-		if v != (*b)[i] {
-			return false
-		}
-	}
-
-	return true
+	return messages, nil
 }
