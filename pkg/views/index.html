@@ -1,9 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WS Hub</title>
+
+    <link rel="stylesheet" href="/assets/output.css" />
 
     <script
       src="https://unpkg.com/htmx.org@1.9.6"
@@ -13,10 +15,10 @@
     <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
   </head>
 
-  <body>
-    {{template "card1" .}}
-
-    <div hx-ext="ws" ws-connect="/admin-ws">
+  <body
+    class="bg-neutral-950 text-neutral-100 container mx-auto max-w-lg my-10"
+  >
+    <div hx-ext="ws" ws-connect="/admin-ws" class="flex flex-col gap-4">
       <div id="connections"></div>
       <div id="topics"></div>
       <div id="messages"></div>

@@ -1,33 +1,88 @@
-{{block "card1" . }}
-<h1>Card 1</h1>
-{{end}} {{block "connections" . }}
-<!-- id="connections" matches the element to be swapped by the ws message -->
-<div id="connections" hx-swap-oob="true">
-  <h2>{{.connections}} connections</h2>
+{{block "connections" . }}
+<div
+  id="connections"
+  hx-swap-oob="true"
+  class="flex flex-col bg-white border shadow-sm rounded-xl dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7]"
+>
+  <div class="p-4 md:p-5">
+    <h3 class="text-lg font-bold text-white">Connections</h3>
+    <p class="mt-2 text-gray-400">{{.connections}} users connected</p>
+  </div>
+  <div
+    class="bg-gray-100 border-t rounded-b-xl py-3 px-4 md:py-4 md:px-5 dark:bg-gray-800 dark:border-gray-700"
+  >
+    <p class="mt-1 text-sm text-gray-500">
+      Last updated at {{now | date "15:04:05"}}
+    </p>
+  </div>
 </div>
 {{end}} {{block "topics" . }}
-<div id="topics" hx-swap-oob="true">
-  <h2>Latest topics</h2>
+<div
+  id="topics"
+  hx-swap-oob="true"
+  class="flex flex-col bg-white border shadow-sm rounded-xl dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7]"
+>
+  <div class="p-4 md:p-5">
+    <h3 class="text-lg font-bold">Topics</h3>
+    <p class="mt-2 text-gray-400">
+      List of the latest {{len .topics}} topics in use
+    </p>
+  </div>
 
-  <ul>
+  <ul class="divide-y divide-neutral-100 divide-opacity-50">
     {{range .topics}}
-    <li>{{.}}</li>
+    <li class="py-4 flex">
+      <div class="ml-3">
+        <p class="text-sm font-medium">{{.}}</p>
+      </div>
+    </li>
     {{end}}
   </ul>
+
+  <div
+    class="bg-gray-100 border-t rounded-b-xl py-3 px-4 md:py-4 md:px-5 dark:bg-gray-800 dark:border-gray-700"
+  >
+    <p class="mt-1 text-sm text-gray-500">
+      Last updated at {{now | date "15:04:05"}}
+    </p>
+  </div>
 </div>
 {{end}} {{block "messages" . }}
-<div id="messages" hx-swap-oob="true">
-  <h2>Latest topics</h2>
+<div
+  id="messages"
+  hx-swap-oob="true"
+  class="flex flex-col bg-white border shadow-sm rounded-xl dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7]"
+>
+  <div class="p-4 md:p-5">
+    <h3 class="text-lg font-bold">Messages</h3>
+    <p class="mt-2 text-gray-400">
+      List of the latest {{len .messages}} messages sent in the platform
+    </p>
+  </div>
 
-  <div style="display: flex; flex-direction: column; gap: 2rem">
+  <ul class="divide-y divide-neutral-100 divide-opacity-50">
     {{range .messages}}
-    <div style="display: flex; flex-direction: column">
-      <span>Topic: {{.Topic}}</span>
-      <span>Timestamp: {{.CreatedAt}}</span>
-      <span>{{.Message | toJson}}</span>
-    </div>
+    <li class="p-4 flex flex-col gap-2">
+      <div class="flex items-center justify-between">
+        <p class="text-sm font-medium">Topic - {{.Topic}}</p>
+        <p class="text-sm font-medium">
+          sent at {{.CreatedAt | date "15:04:05"}}
+        </p>
+      </div>
 
+      <div class="">
+        <p class="text-sm text-gray-500">{{.Message | toJson}}</p>
+      </div>
+    </li>
     {{end}}
+  </ul>
+
+  <div
+    class="bg-gray-100 border-t rounded-b-xl py-3 px-4 md:py-4 md:px-5 dark:bg-gray-800 dark:border-gray-700"
+  >
+    <p class="mt-1 text-sm text-gray-500">
+      Last updated at {{now | date "15:04:05"}}
+    </p>
   </div>
 </div>
 {{end}}

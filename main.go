@@ -13,6 +13,7 @@ func main() {
 	app := fiber.New(fiber.Config{
 		Views: tmpl,
 	})
+	app.Static("/assets", "./public")
 
 	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{
